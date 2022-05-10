@@ -27,6 +27,10 @@ dependencies {
 	implementation 'org.apache.camel.springboot:camel-bean-starter:3.16.0'
 	// https://mvnrepository.com/artifact/org.apache.camel.springboot/camel-direct-starter
 	implementation group: 'org.apache.camel.springboot', name: 'camel-direct-starter', version: '3.16.0'
+	// https://mvnrepository.com/artifact/org.apache.camel.springboot/camel-csv-starter
+	implementation group: 'org.apache.camel.springboot', name: 'camel-csv-starter', version: '3.16.0'
+  // https://mvnrepository.com/artifact/org.apache.camel.springboot/camel-jackson-starter
+	implementation group: 'org.apache.camel.springboot', name: 'camel-jackson-starter', version: '3.16.0'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
