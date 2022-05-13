@@ -263,3 +263,116 @@ Unmarshalling 是將基於文字檔案格式轉換為 Java Object 的行為。
 File format → unmarshal (via data format) → Java object
 ```
 
+### Transforming using Java
+有時會想把一個物件映射到不同的物件。但在 Camel 中，這是一個與 `marshalling` 和 `unmarshalling` 不同的概念。
+
+會使用 bean EIP 將此要轉換的目的類插入 Camel 路由。bean EIP 調用一個 Java 方法，將 `Exchange` 的當前內容傳遞給它。
+
+至於不使用方法名，是因為 Camel 能夠自動地找到適合方法來執行。
+
+
+### Processor: custom code
+從 Camel Route 定義自定義 Java 的最簡單方法是使用 `Processor`。`Processor` 可以在當中使用 Java 語法修改訊息的任何方面（Exchange），像是 `Body` 或是 `Header`。我們在 Camel 中使用 `.process()` 表示，但需要 `Processor` 的實作，可以在當前類中定義該對象，也可以而外編寫。如下
+
+```java
+public class EggProcessor implements Processor {
+    @Override
+    public void process(Exchange exchange) throws Exception {
+      exchange.getMessage().setHeader("EggType", "Scrambled");
+      exchange.getMessage().setBody("I am an egg.");
+    }
+}
+```
+
+### Beans: external classes
+
+從 Camel Route 使用自定義 Java 的另一種方法是使用 `Bean`。
+
+```java
+public class TestBean {
+  public static String whoAmI() {
+    return "I am TestBean.";
+  }
+}
+```
+
+使用方式
+
+```java
+from("direct:start-first")
+  .bean(TestBean.class)
+  .log("The message body is now: ${body}")
+```
+
+如果類別中有多個方法，在 bean 中第二個參數增加要呼叫的方法名
+
+
+```java
+from("direct:start-first")
+  .bean(TestBean.class, method)
+  .log("The message body is now: ${body}")
+```
+
+如果方法要帶參數可以如下
+```java
+from("direct:start-first")
+  .bean(TestBean.class, 'method(arg)')
+  .log("The message body is now: ${body}")
+```
+
+## Dynamic configuration
+屬性通常在 Camel 會使用 `{{property.name}}}` 表示，這樣可以避免硬編碼。如下
+
+1. 將 Route 邏輯與環境變數分開
+Camel Route 只需定義一次，我們只需更改配置檔（.properties）中環境變數，這樣可在不同環境運行
+
+2. 更容易更新環境變數
+當只想進行簡單的環境變數更改，無需重新編譯
+
+3. 更容易測試
+可以在單元測試時輕鬆覆蓋或依據變數更換 endpoints，從而更容易測試
+
+
+在 Spring boot 中我們可以將環境變數定義在 `application.properties`。預設下，Spring Boot 讀取 `application.properties` 檔案，變設定環境變數的值，`Camel` 在 Route 啟動時使用它們。
+
+對於不同環境我們可以透過 `application-<profile>.properties` 方式設定，如果給 dev 則會設定 `application-dev.properties`，運行時在指定使用哪個環境變數透過 `profiles.active` 像是`--spring.profiles.active=dev`。
+
+## Integrating with applications
+### REST DSL
+REST DSL 是 Camel 建立 REST 服務的語法。創建過程就變得簡單多了，不需要太複雜流程。
+
+REST DSL 主要有兩部分:
+1. REST Configuration section
+為 API 配置一些全域設置
+
+2. REST endpoint definition
+定義 endpoint 和每個方法
+
+### REST configuration
+可以藉由 `restConfiguration` 定義配置，但至少要配置以下三件事
+- 為 REST API 提供服務的底層組件
+- hostname
+- port
+
+```java
+restConfiguration()
+  .component("undertow")
+  .host("localhost").port("8080");
+```
+
+### Defining the operations
+定義好配置(configuration)後，接著是構建操作。
+
+REST DSL 流程如下
+
+```
+REST keyword → HTTP operation → to or route definition
+```
+
+- 多個 HTTP methods(POST、GET ...)
+- 添加 `.route()` 可以告訴 Camel 說要跟隨多個 endpoint
+- REST 是同步的。當 Route 執行完後，Camel 會將 *Exchange Body* 內容返回給消費者(consumer)
+
+
+
+
