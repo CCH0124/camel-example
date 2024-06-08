@@ -20,6 +20,14 @@ dependencies {
     // Use JUnit Jupiter for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 
+    // https://mvnrepository.com/artifact/org.apache.camel/camel-core
+    implementation 'org.apache.camel:camel-core:4.6.0'
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
+    implementation 'org.slf4j:slf4j-log4j12:2.0.13'
+
+
+
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:31.1-jre'
 }
